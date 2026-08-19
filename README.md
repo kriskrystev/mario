@@ -1,6 +1,6 @@
 # Mario
 
-A Java game built from scratch on top of [LWJGL](https://www.lwjgl.org/) (Lightweight Java Game Library), following the "Java Game Engine Development" style tutorials. The project currently sets up a GLFW window and an OpenGL rendering context as the foundation for a 2D engine.
+A Java game built from scratch on top of [LWJGL](https://www.lwjgl.org/) (Lightweight Java Game Library), following the "Java Game Engine Development" style tutorials. The project currently sets up a GLFW window and an OpenGL rendering context, along with mouse and keyboard input handling, as the foundation for a 2D engine.
 
 ## Tech stack
 
@@ -36,7 +36,18 @@ The `application` Gradle plugin isn't wired up yet, so run `Main.main()` directl
 
 ```
 src/main/java/
-├── Main.java           # Entry point
+├── Main.java              # Entry point
 └── jade/
-    └── Window.java      # GLFW window setup and main render loop
+    ├── Window.java         # GLFW window setup and main render loop
+    ├── MouseListener.java  # Mouse position, drag, button, and scroll state
+    └── KeyListener.java    # Keyboard key state
 ```
+
+## Input handling
+
+Mouse and keyboard input are tracked via GLFW callbacks registered on the window in `Window.init()`, and exposed through two singletons:
+
+- `MouseListener` — cursor position (`getX()`/`getY()`), movement delta (`getDx()`/`getDy()`), scroll offset (`getScrollX()`/`getScrollY()`), drag state (`isDragging()`), and button state (`mouseButtonDown(button)`)
+- `KeyListener` — key state via `isKeyPressed(keyCode)`, backed by GLFW key codes
+
+Both singletons are updated automatically by their registered GLFW callbacks and can be queried from anywhere via `MouseListener.get()` / `KeyListener.get()`.
