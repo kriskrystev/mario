@@ -19,10 +19,12 @@ Pushes the current branch to origin and creates or updates its pull request
 3. Generate PR details from the branch's commits/diff against `main`:
    - Title: short summary of the change
    - Body: using the PR Body Format below
-4. Show the generated title and body, and ask for confirmation. Y/N choice.
+   - Label: derive the `<type>` prefix from the branch name (e.g. `feat/...` → `feat`) and use it as the label name. If a label with that name doesn't exist in the repo yet, create it first (`gh label create <type>`).
+   - Assignee: the authenticated GitHub user pushing this branch and opening the PR — i.e. the code's owner (`@me`)
+4. Show the generated title, body, label, and assignee, and ask for confirmation. Y/N choice.
 5. On confirmation:
-   - If no PR exists - create one with the generated title and body
-   - If a PR exists - update its title and body with the generated details
+   - If no PR exists - create one with the generated title, body, label, and assignee
+   - If a PR exists - update its title, body, label, and assignee with the generated details
 6. Output the PR URL
 
 ## PR Body Format
@@ -49,6 +51,9 @@ Body:
 ## Test plan
 - [ ] Verified jump triggers on keypress
 - [ ] Verified character returns to ground
+
+Label: feat
+Assignee: @me
 
 Create PR with these details? (Y/N)
 
