@@ -24,7 +24,8 @@ Test: JUnit 6 (Jupiter) is wired up via `test { useJUnitPlatform() }`, but no te
 ## Architecture
 
 - `Main.java` is the entry point; it fetches the singleton `Window` and calls `run()`.
-- `jade/Window.java` is a singleton (`Window.get()`) that owns the GLFW/OpenGL lifecycle: `init()` creates and configures the GLFW window and OpenGL context, `loop()` is the main render loop (currently just clears the screen and polls events). Future engine code should follow this `jade` package convention.
+- `jade/Window.java` is a singleton (`Window.get()`) that owns the GLFW/OpenGL lifecycle: `init()` creates and configures the GLFW window and OpenGL context, `loop()` is the main render loop, `run()` also tears down GLFW callbacks/resources on exit. Future engine code should follow this `jade` package convention.
+- `jade/MouseListener.java` and `jade/KeyListener.java` are singletons (same `get()` pattern as `Window`) populated by GLFW callbacks registered in `Window.init()`; `Window.loop()` reads `KeyListener` state to drive a demo fade effect. See README's "Input handling" section for their public API.
 
 ## Build configuration notes
 
