@@ -17,8 +17,10 @@ public class Window {
     private static Window window = null;
     private long glfwWindow; // a number referencing the window in memory
 
-    private float r, g, b, a;
+    public float r, g, b, a;
     private boolean fadeToBlack = false;
+
+    private static Scene currentScene;
 
     private Window() {
         this.width = 1920;
@@ -29,6 +31,19 @@ public class Window {
         g = 1;
         b = 1;
         a = 1;
+    }
+
+    public static void changeScene(int newScene) {
+        switch (newScene) {
+            case 0:
+                currentScene = new LevelEditorScene();
+                break;
+            case 1:
+                currentScene = new LevelScene();
+                break;
+            default:
+                assert false : "Unknown scene '" + newScene + "'";
+        }
     }
 
     public static Window get() {
@@ -88,11 +103,13 @@ public class Window {
         glfwShowWindow(glfwWindow);
 
         GL.createCapabilities();
+        Window.changeScene(0);
     }
 
     public void loop() {
         float beginTime = Time.getTime();
-        float endTime = Time.getTime();
+        float endTime;
+        float dt = -1.0f;
 
         while (!glfwWindowShouldClose(glfwWindow)) {
             glfwPollEvents();
@@ -100,27 +117,14 @@ public class Window {
             glClearColor(r, g, b, a);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            if(fadeToBlack) {
-                r = Math.max(r - 0.01f,0);
-                g = Math.max(g - 0.01f,0);
-                b = Math.max(b - 0.01f,0);
-            } else {
-                r = Math.max(r + 0.01f,1);
-                g = Math.min(g + 0.01f,1);
-                b = Math.min(b + 0.01f,1);
+            if (dt > 0) {
+                currentScene.update(dt);
             }
 
-            if (KeyListener.isKeyPressed(GLFW_KEY_SPACE)) {
-                fadeToBlack = true;
-                System.out.println("Space key is pressed");
-            } else {
-                fadeToBlack = false;
-
-            }
             glfwSwapBuffers(glfwWindow);
 
             endTime = Time.getTime();
-            float dt = endTime - beginTime;
+            dt = endTime - beginTime;
             beginTime = endTime;
         }
     }
