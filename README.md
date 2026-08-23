@@ -1,6 +1,6 @@
 # Mario
 
-A Java game built from scratch on top of [LWJGL](https://www.lwjgl.org/) (Lightweight Java Game Library), following the "Java Game Engine Development" style tutorials. The project currently sets up a GLFW window and an OpenGL rendering context, along with mouse and keyboard input handling, as the foundation for a 2D engine.
+A Java game built from scratch on top of [LWJGL](https://www.lwjgl.org/) (Lightweight Java Game Library), following the "Java Game Engine Development" style tutorials. The project currently sets up a GLFW window and an OpenGL rendering context, mouse and keyboard input handling, scene management, a reusable shader abstraction, and a 2D camera, as the foundation for a 2D engine.
 
 ## Tech stack
 
@@ -37,10 +37,18 @@ The `application` Gradle plugin isn't wired up yet, so run `Main.main()` directl
 ```
 src/main/java/
 ├── Main.java              # Entry point
-└── jade/
-    ├── Window.java         # GLFW window setup and main render loop
-    ├── MouseListener.java  # Mouse position, drag, button, and scroll state
-    └── KeyListener.java    # Keyboard key state
+├── jade/
+│   ├── Window.java         # GLFW window setup and main render loop
+│   ├── MouseListener.java  # Mouse position, drag, button, and scroll state
+│   ├── KeyListener.java    # Keyboard key state
+│   ├── Scene.java          # Abstract base class for scenes
+│   ├── LevelEditorScene.java # Renders test geometry via the shader/camera pipeline
+│   ├── LevelScene.java     # Placeholder scene
+│   └── Camera.java         # 2D orthographic camera (position, projection/view matrices)
+├── renderer/
+│   └── Shader.java         # Loads, compiles, links, and binds GLSL shader programs
+└── util/
+    └── Time.java           # Time.getTime() — seconds elapsed since class load
 ```
 
 ## Input handling
@@ -51,3 +59,17 @@ Mouse and keyboard input are tracked via GLFW callbacks registered on the window
 - `KeyListener` — key state via `isKeyPressed(keyCode)`, backed by GLFW key codes
 
 Both singletons are updated automatically by their registered GLFW callbacks and can be queried from anywhere via `MouseListener.get()` / `KeyListener.get()`.
+
+## Scene management
+
+`Scene` is an abstract base class with an `init()` hook and an abstract `update(float dt)`, plus a `protected Camera camera` available to subclasses. `Window.changeScene(int)` swaps the active scene and calls its `init()`:
+
+- `0` → `LevelEditorScene`
+- `1` → `LevelScene`
+
+`Window.loop()` computes `dt` each frame via `Time.getTime()` and calls `currentScene.update(dt)`.
+
+## Rendering
+
+- `renderer/Shader` loads a single `.glsl` file containing both a vertex and fragment shader, split on `#type vertex` / `#type fragment` markers (see `assets/shaders/default.glsl`). Call `compile()` once after construction, then `use()`/`detach()` to bind/unbind the program each frame. Uniform values are set via `uploadMat4f`, `uploadMat3f`, `uploadVec4f`, `uploadVec3f`, `uploadVec2f`, `uploadFloat`, and `uploadInt`.
+- `jade/Camera` holds a 2D `position` and exposes `getProjectionMatrix()` (orthographic) and `getViewMatrix()` (`lookAt`-based), typically uploaded to a shader as `uProjection`/`uView` uniforms each frame.
