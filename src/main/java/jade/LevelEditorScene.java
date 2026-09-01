@@ -1,5 +1,6 @@
 package jade;
 
+import jade.components.SpriteRenderer;
 import org.joml.Vector2f;
 import org.lwjgl.BufferUtils;
 import renderer.Shader;
@@ -14,37 +15,12 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
 public class LevelEditorScene extends Scene {
-
-    private String vertexShaderSrc = "#version 330 core\n" +
-            "\n" +
-            "layout (location=0) in vec3 aPos;\n" +
-            "layout (location=1) in vec4 aColor;\n" +
-            "\n" +
-            "out vec4 fColor;\n" +
-            "\n" +
-            "void main()\n" +
-            "{\n" +
-            "    fColor = aColor;\n" +
-            "    gl_Position = vec4(aPos, 1.0);\n" +
-            "}\n";
-    private String fragmentShaderSrc = "#version 330 core\n" +
-            "\n" +
-            "in vec4 fColor;\n" +
-            "\n" +
-            "out vec4 color;\n" +
-            "\n" +
-            "void main()\n" +
-            "{\n" +
-            "    color = fColor;\n" +
-            "}";
-
-    private int vertexID, fragmentID, shaderProgram;
     private float[] vertexArray = {
             // position               // color                      // UV Coordinates
-            100.5f, 0.5f,   0.0f,    1.0f, 0.0f, 0.0f, 1.0f,          1, 0, // bottom right 0
-            0.5f,   100.5f, 0.0f,    0.0f, 1.0f, 0.0f, 1.0f,          0, 1, // top left     1
-            100.5f, 100.5f, 0.0f,    0.0f, 0.0f, 1.0f, 1.0f,          1, 1, // top right    2
-            0.5f,   0.5f,   0.0f,    1.0f, 1.0f, 0.0f, 1.0f,          0, 0  // bottom left  3
+            100.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1, 1, // bottom right 0
+            0.5f, 100.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0, 0, // top left     1
+            100.5f, 100.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1, 0, // top right    2
+            0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0, 1  // bottom left  3
     };
     // IMPORTANT: Must be in counter-clockwise order
     private int[] elementArray = {
@@ -63,12 +39,19 @@ public class LevelEditorScene extends Scene {
     private int vaoID, vboID, eboID;
     private Shader defaultShader;
     private Texture testTexture;
+    GameObject testObj;
+    private boolean firstTime = false;
 
     public LevelEditorScene() {
     }
 
     @Override
     public void init() {
+        System.out.println("Creating test object");
+        this.testObj = new GameObject("Test object");
+        this.testObj.addComponent(new SpriteRenderer());
+        this.addGameObjectToScene(this.testObj);
+
         this.camera = new Camera(new Vector2f());
         defaultShader = new Shader("assets/shaders/default.glsl");
         this.testTexture = new Texture("assets/images/testImage.png");
@@ -142,5 +125,18 @@ public class LevelEditorScene extends Scene {
         glBindVertexArray(0);
 
         defaultShader.detach();
+
+        if (!firstTime) {
+            System.out.println("Creating game object");
+            GameObject go = new GameObject("Game Test 2");
+            go.addComponent(new SpriteRenderer());
+            this.addGameObjectToScene(go);
+            firstTime = true;
+        }
+
+
+        for (GameObject go : this.gameObjects) {
+            go.update(dt);
+        }
     }
 }
